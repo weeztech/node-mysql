@@ -19,16 +19,16 @@ server.listen(common.fakeServerPort, function (err) {
     connection.release();
     cluster.remove('SLAVE*');
 
-    pool.getConnection(function (err, connection) {
+    pool.getConnection(function (err) {
       assert.ok(err);
       assert.equal(err.code, 'POOL_NOEXIST');
 
       cluster.remove('SLAVE*');
 
-        cluster.end(function (err) {
-          assert.ifError(err);
-          server.destroy();
-        });
+      cluster.end(function (err) {
+        assert.ifError(err);
+        server.destroy();
+      });
     });
   });
 });

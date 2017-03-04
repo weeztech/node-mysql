@@ -37,23 +37,15 @@ var tests = [
   {type: 'mediumtext', insert: 'Hello World'},
   {type: 'longtext', insert: 'Hello World'},
   {type: 'text', insert: 'Hello World'},
-  {type: 'point', insertRaw: 'POINT(1.2,-3.4)', expect: {x:1.2, y:-3.4}, deep: true},
-  {type: 'point', insertRaw: (function() {
-      var buffer = new Buffer(21);
-      buffer.writeUInt8(1, 0);
-      buffer.writeUInt32LE(1, 1);
-      buffer.writeDoubleLE(-5.6, 5);
-      buffer.writeDoubleLE(10.23, 13);
-      return 'GeomFromWKB(X\'' + buffer.toString('hex') + '\')';
-    })(), expect: {x:-5.6, y:10.23}, deep: true},
+  {type: 'point', insertRaw: 'POINT(1.2,-3.4)', expect: {x: 1.2, y: -3.4}, deep: true},
   {type: 'point', insertRaw: '', insert: null, expect: null},
-  {type: 'linestring', insertRaw: 'LINESTRING(POINT(1.2,-3.4),POINT(-5.6,10.23),POINT(0.2,0.7))', expect: [{x:1.2, y:-3.4}, {x:-5.6, y:10.23}, {x:0.2, y:0.7}], deep: true},
-  {type: 'polygon', insertRaw: "GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0),(5 5,7 5,7 7,5 7, 5 5))')", expect: [[{x:0,y:0},{x:10,y:0},{x:10,y:10},{x:0,y:10},{x:0,y:0}],[{x:5,y:5},{x:7,y:5},{x:7,y:7},{x:5,y:7},{x:5,y:5}]], deep: true},
-  {type: 'geometry', insertRaw: 'POINT(1.2,-3.4)', expect: {x:1.2, y:-3.4}, deep: true},
-  {type: 'multipoint', insertRaw: "GeomFromText('MULTIPOINT(0 0, 20 20, 60 60)')", expect: [{x:0, y:0}, {x:20, y:20}, {x:60, y:60}], deep: true},
-  {type: 'multilinestring', insertRaw: "GeomFromText('MULTILINESTRING((10 10, 20 20), (15 15, 30 15))')", expect: [[{x:10,y:10},{x:20,y:20}],[{x:15,y:15},{x:30,y:15}]], deep: true},
-  {type: 'multipolygon', insertRaw: "GeomFromText('MULTIPOLYGON(((0 0,10 0,10 10,0 10,0 0)),((5 5,7 5,7 7,5 7, 5 5)))')", expect: [[[{x:0,y:0},{x:10,y:0},{x:10,y:10},{x:0,y:10},{x:0,y:0}]],[[{x:5,y:5},{x:7,y:5},{x:7,y:7},{x:5,y:7},{x:5,y:5}]]], deep: true},
-  {type: 'geometrycollection', insertRaw: "GeomFromText('GEOMETRYCOLLECTION(POINT(10 10), POINT(30 30), LINESTRING(15 15, 20 20))')", expect: [{x:10,y:10},{x:30,y:30},[{x:15,y:15},{x:20,y:20}]], deep: true}
+  {type: 'linestring', insertRaw: 'LINESTRING(POINT(1.2,-3.4),POINT(-5.6,10.23),POINT(0.2,0.7))', expect: [{x: 1.2, y: -3.4}, {x: -5.6, y: 10.23}, {x: 0.2, y: 0.7}], deep: true},
+  {type: 'polygon', insertRaw: 'POLYGON(LINESTRING(POINT(0,0),POINT(10,0),POINT(10,10),POINT(0,10),POINT(0,0)),LINESTRING(POINT(5,5),POINT(7,5),POINT(7,7),POINT(5,7),POINT(5,5)))', expect: [[{x: 0,y: 0}, {x: 10, y: 0}, {x: 10, y: 10}, {x: 0, y: 10}, {x: 0, y: 0}], [{x: 5, y: 5}, {x: 7, y: 5}, {x: 7, y: 7}, {x: 5, y: 7}, {x: 5, y: 5}]], deep: true},
+  {type: 'geometry', insertRaw: 'POINT(1.2,-3.4)', expect: {x: 1.2, y: -3.4}, deep: true},
+  {type: 'multipoint', insertRaw: 'MULTIPOINT(POINT(0,0),POINT(20,20),POINT(60,60))', expect: [{x: 0, y: 0}, {x: 20, y: 20}, {x: 60, y: 60}], deep: true},
+  {type: 'multilinestring', insertRaw: 'MULTILINESTRING(LINESTRING(POINT(10,10),POINT(20,20)),LINESTRING(POINT(15,15),POINT(30,15)))', expect: [[{x: 10, y: 10}, {x: 20, y: 20}], [{x: 15, y: 15}, {x: 30, y: 15}]], deep: true},
+  {type: 'multipolygon', insertRaw: 'MULTIPOLYGON(POLYGON(LINESTRING(POINT(0,0),POINT(10,0),POINT(10,10),POINT(0,10),POINT(0,0))),POLYGON(LINESTRING(POINT(5,5),POINT(7,5),POINT(7,7),POINT(5,7),POINT(5,5))))', expect: [[[{x: 0,y: 0}, {x: 10, y: 0}, {x: 10, y: 10}, {x: 0, y: 10}, {x: 0, y: 0}]], [[{x: 5, y: 5}, {x: 7, y: 5}, {x: 7, y: 7}, {x: 5, y: 7}, {x: 5, y: 5}]]], deep: true},
+  {type: 'geometrycollection', insertRaw: 'GEOMETRYCOLLECTION(POINT(10,10),POINT(30,30),LINESTRING(POINT(15,15),POINT(20,20)))', expect: [{x: 10, y: 10}, {x: 30, y: 30}, [{x: 15, y: 15}, {x: 20,y: 20}]], deep: true}
 ];
 
 var table = 'type_casting';
@@ -78,7 +70,7 @@ common.getTestConnection({supportBigNumbers: true}, function (err, connection) {
   var createTable = [
     'CREATE TEMPORARY TABLE ' + connection.escapeId(table) + ' (',
     '`id` int(11) unsigned NOT NULL AUTO_INCREMENT,'
-    ].concat(schema).concat([
+  ].concat(schema).concat([
     'PRIMARY KEY (`id`)',
     ') ENGINE=InnoDB DEFAULT CHARSET=utf8'
   ]).join('\n');

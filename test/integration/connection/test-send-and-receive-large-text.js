@@ -8,7 +8,6 @@ common.getTestConnection(function (err, connection) {
   getMaxAllowedPacket(connection);
 });
 
-
 var oldMaxAllowedPacket;
 function getMaxAllowedPacket(connection) {
   connection.query('SHOW VARIABLES WHERE Variable_name = ?', ['max_allowed_packet'], function (err, rows) {
@@ -29,7 +28,7 @@ function increaseMaxAllowedPacketIfNeeded(connection) {
     ? minMaxAllowedPacket
     : oldMaxAllowedPacket;
 
-  connection.query('SET GLOBAL max_allowed_packet = ?', [newMaxAllowedPacket], function (err, rows) {
+  connection.query('SET GLOBAL max_allowed_packet = ?', [newMaxAllowedPacket], function (err) {
     assert.ifError(err);
 
     // We need to re-connect for this change to take effect, bah
